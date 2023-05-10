@@ -1,0 +1,17 @@
+# Для автоматического запуска бота при перезагрузке сервера копия этого файла
+# должна лежать в папке /etc/systemd/system/
+# команда для копирования файла в нужную категорию cp BotParsingZakazBashkortostan.service /etc/systemd/system/
+# systemctl enable BotParsingZakazBashkortostan - это команда для регистрации автозапуска бота при рестарте
+# service BotParsingZakazBashkortostan start - запуск бота / stop / status
+
+[Unit]
+Description=BotParsingZakazBashkortostan
+[Service]
+WorkingDirectory=/home/BotParsingZakazBashkortostan
+User=root
+ExecStart=/home/BotParsingZakazBashkortostan/venv/bin/python main.py
+Restart=on-failure
+RestartSec=5s
+[Install]
+WantedBy=multi-user.target
+EOF
