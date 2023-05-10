@@ -5,6 +5,7 @@ from typing import Any, Callable
 
 from aiogram.types import Message, CallbackQuery
 from loguru import logger
+from zoneinfo import ZoneInfo
 
 from config import ADMINS, TECH_ADMINS
 from database.db_utils import Tables, db
@@ -55,6 +56,9 @@ class DBManager:
     async def get_or_create_last_parse_time(self):
         with self.point_db_connection:
             parse_data, fact_create = self.tables.parsedata.get_or_create(id=1)
+            if fact_create:
+                parse_data.last_parse_time = datetime(2023, 1, 1, 0, 0, 0, 1, tzinfo=ZoneInfo('Europe/Moscow'))
+                parse_data.save()
         self.logger.debug(self.sign + f'{parse_data.last_parse_time =}')
         return parse_data.last_parse_time
 
@@ -62,7 +66,7 @@ class DBManager:
         parse_data: Tables.parsedata = self.tables.parsedata.get_or_none(id=1)
         if not parse_data:
             return False
-        parse_data.last_parse_time = datetime.now()
+        parse_data.last_parse_time = datetime.now(tz=ZoneInfo('Europe/Moscow'))
         parse_data.save()
         self.logger.debug(self.sign + f'{parse_data.last_parse_time =}')
         return True

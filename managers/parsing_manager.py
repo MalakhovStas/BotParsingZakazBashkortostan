@@ -35,6 +35,7 @@ class ParsingManager:
             if data := await self.rm(url=url, headers=self.def_headers, method='get'):
                 if data.get('data'):
                     await self.mailing(data.get('data')[0])
+        await self.dbase.update_last_parse_time()
 
     async def get_inn_list(self):
         with open(PATH_FILE_INNS, 'r') as file:
@@ -47,12 +48,13 @@ class ParsingManager:
 
     async def mailing(self, data):
         users = await self.dbase.get_all_users(id_only=True, not_ban=True)
-        last_parse_time = await self.dbase.get_or_create_last_parse_time()
-
+        last_parse_tm_from_db = await self.dbase.get_or_create_last_parse_time()
+        last_parse_time = datetime.strptime(last_parse_tm_from_db, "%Y-%m-%d %H:%M:%S.%f%z")
         start_date = datetime.strptime(data.get('purchase_start'), '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(
             tz=ZoneInfo('Europe/Moscow'))
         end_date = datetime.strptime(data.get('purchase_end'), '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(
             tz=ZoneInfo('Europe/Moscow'))
+
         if start_date > last_parse_time:
             for user in users:
                 result = f"<i>{self.def_headers.get('Origin')}</i>\n" \
@@ -67,4 +69,3 @@ class ParsingManager:
                                                 disable_web_page_preview=True, parse_mode='HTML')
                 except Exception as exc:
                     self.logger.warning(self.sign + f'{exc=}')
-        await self.dbase.update_last_parse_time()
