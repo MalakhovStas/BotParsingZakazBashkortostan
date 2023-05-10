@@ -52,6 +52,21 @@ class DBManager:
                     cls.logger.debug(cls.sign + f'decorate_methods -> db_connector wrapper -> method: {attr_name}')
                     setattr(cls, attr_name, cls.db_connector(method))
 
+    async def get_or_create_last_parse_time(self):
+        with self.point_db_connection:
+            parse_data, fact_create = self.tables.parsedata.get_or_create(id=1)
+        self.logger.debug(self.sign + f'{parse_data.last_parse_time =}')
+        return parse_data.last_parse_time
+
+    async def update_last_parse_time(self) -> bool:
+        parse_data: Tables.parsedata = self.tables.parsedata.get_or_none(id=1)
+        if not parse_data:
+            return False
+        parse_data.last_parse_time = datetime.now()
+        parse_data.save()
+        self.logger.debug(self.sign + f'{parse_data.last_parse_time =}')
+        return True
+
     async def get_or_create_user(self, update: Message | CallbackQuery) -> tuple[tuple, bool | int]:
         """ Если user_id не найден в таблице Users -> создаёт новуе записи в
             таблице Users по ключу user_id """

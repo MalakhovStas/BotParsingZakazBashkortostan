@@ -47,23 +47,24 @@ class ParsingManager:
 
     async def mailing(self, data):
         users = await self.dbase.get_all_users(id_only=True, not_ban=True)
-        for user in users:
-            start_date = datetime.strftime(
-                datetime.strptime(data.get('purchase_start'), '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(
-                    tz=ZoneInfo('Europe/Moscow')), '%m/%d %H:%M')
-            end_date = datetime.strftime(
-                datetime.strptime(data.get('purchase_end'), '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(
-                    tz=ZoneInfo('Europe/Moscow')), '%m/%d %H:%M')
+        last_parse_time = await self.dbase.get_or_create_last_parse_time()
 
-            result = f"<i>{self.def_headers.get('Origin')}</i>\n" \
-                     f"<b>Новый заказ</b>: {data.get('reg_number')}\n" \
-                     f"<b>От</b>: {data.get('organization')}\n" \
-                     f"<b>Создан</b>: {start_date}\n" \
-                     f"<b>Срок сбора</b>: {end_date}"
-            keyboard = InlineKeyboardMarkup()
-            keyboard.add(InlineKeyboardButton(text='Открыть', url=self.link_url.format(ID=data.get("id"))))
-            try:
-                await self.bot.send_message(chat_id=user.user_id, text=result, reply_markup=keyboard,
-                                            disable_web_page_preview=True, parse_mode='HTML')
-            except Exception as exc:
-                self.logger.warning(self.sign + f'{exc=}')
+        start_date = datetime.strptime(data.get('purchase_start'), '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(
+            tz=ZoneInfo('Europe/Moscow'))
+        end_date = datetime.strptime(data.get('purchase_end'), '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(
+            tz=ZoneInfo('Europe/Moscow'))
+        if start_date > last_parse_time:
+            for user in users:
+                result = f"<i>{self.def_headers.get('Origin')}</i>\n" \
+                         f"<b>Новый заказ</b>: {data.get('reg_number')}\n" \
+                         f"<b>От</b>: {data.get('organization')}\n" \
+                         f"<b>Создан</b>: {datetime.strftime(start_date, '%m/%d %H:%M')}\n" \
+                         f"<b>Срок сбора</b>: {datetime.strftime(end_date, '%m/%d %H:%M')}"
+                keyboard = InlineKeyboardMarkup()
+                keyboard.add(InlineKeyboardButton(text='Открыть', url=self.link_url.format(ID=data.get("id"))))
+                try:
+                    await self.bot.send_message(chat_id=user.user_id, text=result, reply_markup=keyboard,
+                                                disable_web_page_preview=True, parse_mode='HTML')
+                except Exception as exc:
+                    self.logger.warning(self.sign + f'{exc=}')
+        await self.dbase.update_last_parse_time()

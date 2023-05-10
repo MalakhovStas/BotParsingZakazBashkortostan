@@ -55,7 +55,8 @@ TYPE_PROXI = ''
 RM_TIMEOUT = 20
 
 """ Настройки регулярности парсинга """
-PARSING_INTERVAL_SECONDS = 60*60*12  # каждые 12 часов
+# PARSING_INTERVAL_SECONDS = 60*60*12  # каждые 12 часов
+PARSING_INTERVAL_SECONDS = 60*15  # каждые 15 минут
 
 """ Путь к файлу с ИНН """
 PATH_FILE_INNS = os.path.abspath('inns.json')

@@ -34,8 +34,17 @@ class User(Model):
         db_table = 'users'
 
 
+class ParseData(Model):
+    last_parse_time = DateTimeField(default=datetime.now(), null=False)
+
+    class Meta:
+        database = db
+        db_table = 'parsedata'
+
+
 class Tables:
     users = User
+    parsedata = ParseData
 
     @classmethod
     def all_tables(cls):
