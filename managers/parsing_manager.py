@@ -57,8 +57,8 @@ class ParsingManager:
 
         if start_date > last_parse_time:
             for user in users:
-                result = f"<i>{self.def_headers.get('Origin')}</i>\n" \
-                         f"<b>Новый заказ</b>: {data.get('reg_number')}\n" \
+                # result = f"<i>{self.def_headers.get('Origin')}</i>\n" \ # верхняя строка со ссылкой на сайт
+                result = f"<b>Новый заказ</b>: {data.get('reg_number')}\n" \
                          f"<b>От</b>: {data.get('organization')}\n" \
                          f"<b>Создан</b>: {datetime.strftime(start_date, '%m/%d %H:%M')}\n" \
                          f"<b>Срок сбора</b>: {datetime.strftime(end_date, '%m/%d %H:%M')}"
