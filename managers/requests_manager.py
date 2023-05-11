@@ -207,6 +207,12 @@ class RequestsManager:
                 else:
                     break
         self.logger.debug(self.sign + f'{step=} | proxi: {ip, port, login, password} | return={str(result)[:100]}...')
+        #TODO нужно доделать
+        # if msg := result.get('response'):
+        #     if msg.find('Forbidden') != -1:
+        #         from utils.admins_send_message import func_admins_message
+        #         await func_admins_message(update=update, message=f'⚠ <b>Ошибка парсинга:</b>\n'
+        #                                                          f'<b>Ответ севера:</b> Forbidden')
         return result
 
     async def aio_request_gather(
