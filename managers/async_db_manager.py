@@ -78,17 +78,17 @@ class DBManager:
         admin = True if update.from_user.id in set(tuple(map(
             int, ADMINS)) if ADMINS else tuple() + tuple(map(int, TECH_ADMINS)) if TECH_ADMINS else tuple()) else False
 
-        with self.point_db_connection:
-            user, fact_create = self.tables.users.get_or_create(user_id=update.from_user.id)
-            if fact_create:
-                fact_create_and_num_users = self.tables.users.select().count()
-                user.user_id = int(update.from_user.id)
-                user.username = update.from_user.username
-                user.first_name = update.from_user.first_name
-                user.last_name = update.from_user.last_name
-                user.position = "admin" if admin else "user"
-                user.password = "admin" if admin else None
-                user.save()
+        # with self.point_db_connection:
+        user, fact_create = self.tables.users.get_or_create(user_id=update.from_user.id)
+        if fact_create:
+            fact_create_and_num_users = self.tables.users.select().count()
+            user.user_id = int(update.from_user.id)
+            user.username = update.from_user.username
+            user.first_name = update.from_user.first_name
+            user.last_name = update.from_user.last_name
+            user.position = "admin" if admin else "user"
+            user.password = "admin" if admin else None
+            user.save()
 
         text = 'created new user' if fact_create else 'get user'
         self.logger.debug(self.sign + f' {text.upper()}: {user.username=} | {user.user_id=}')
@@ -170,3 +170,17 @@ class DBManager:
         user = self.tables.users.select(self.tables.users.password).where(self.tables.users.user_id == user_id).get()
         self.logger.debug(self.sign + f'func select_password password -> len password {len(user.password)}')
         return user.password
+
+    async def get_or_create_order(self, **kwargs) -> tuple[tuple, bool]:
+        """ Если reg_number не найден в таблице Orders -> создаёт новую запись """
+        fact_create = False
+        order, fact_create = self.tables.orders.get_or_create(reg_number=kwargs.get('reg_number'))
+        if fact_create:
+            order.organization = kwargs.get('organization')
+            order.purchase_start_date = kwargs.get('start_date')
+            order.purchase_end_date = kwargs.get('end_date')
+            order.save()
+
+        text = 'created new order' if fact_create else 'get order'
+        self.logger.debug(self.sign + f' {text.upper()}: {order.reg_number=} | {order.organization=}')
+        return order, fact_create

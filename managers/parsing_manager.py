@@ -55,7 +55,11 @@ class ParsingManager:
         end_date = datetime.strptime(data.get('purchase_end'), '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(
             tz=ZoneInfo('Europe/Moscow'))
 
-        if start_date > last_parse_time:
+        order, fact_create = await self.dbase.get_or_create_order(start_date=start_date, end_date=end_date, **data)
+        # if start_date > last_parse_time: # проверка по дате создания
+        if fact_create:
+            self.logger.info(self.sign + f'send order reg_number: {data.get("reg_number")} | '
+                                         f'organization: {data.get("organization")}')
             for user in users:
                 # result = f"<i>{self.def_headers.get('Origin')}</i>\n" \ # верхняя строка со ссылкой на сайт
                 result = f"<b>Новый заказ</b>: {data.get('reg_number')}\n" \

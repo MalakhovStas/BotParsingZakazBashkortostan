@@ -34,6 +34,18 @@ class User(Model):
         db_table = 'users'
 
 
+class Order(Model):
+    reg_number = CharField(null=False, unique=True)
+    organization = CharField(null=True)
+    purchase_start_date = DateTimeField(default=datetime.now(), null=False)
+    purchase_end_date = DateTimeField(default=datetime.now(), null=False)
+
+    class Meta:
+        database = db
+        order_by = 'purchase_start_date'
+        db_table = 'orders'
+
+
 class ParseData(Model):
     last_parse_time = DateTimeField(default=datetime.now(), null=False)
 
@@ -45,6 +57,7 @@ class ParseData(Model):
 class Tables:
     users = User
     parsedata = ParseData
+    orders = Order
 
     @classmethod
     def all_tables(cls):
