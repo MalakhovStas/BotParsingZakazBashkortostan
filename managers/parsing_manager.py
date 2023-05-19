@@ -9,6 +9,7 @@ class ParsingManager:
 
     __instance = None
     def_url = "https://api-zakaz.bashkortostan.ru/apifront/purchases?filter={cust}&status=1"
+    # def_url = "https://api-zakaz.bashkortostan.ru/apifront/purchases?filter={%22customer%22:%220274037500%22}&status=1"
     link_url = 'https://zakaz.bashkortostan.ru/purchases/grouped/fl44/item/{ID}/view'
     def_headers = {
         "Accept": "application/json",
@@ -29,12 +30,16 @@ class ParsingManager:
         self.sign = self.__class__.__name__ + ': '
 
     async def start_parsing(self):
+        # print(self.get_inn_list())
         for inn in await self.get_inn_list():
+
             customer = f"{'{'}%22customer%22:%22{inn}%22{'}'}"
             url = self.def_url.format(cust=customer)
             if data := await self.rm(url=url, headers=self.def_headers, method='get'):
                 if data.get('data'):
-                    await self.mailing(data.get('data')[0])
+                    # print(data.get('data'))
+                    for order in data.get('data'):
+                        await self.mailing(order)
         await self.dbase.update_last_parse_time()
 
     async def get_inn_list(self):
